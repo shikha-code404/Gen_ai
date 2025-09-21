@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Marketplace for Local Artisans — Prototype</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f6f5f3; color: #223; }
+
+    /* HERO */
+    .hero { background: linear-gradient(135deg,#ffedd8 0%, #ffe1d6 45%, #cdeedd 100%); padding: 3.5rem 1rem; text-align: center; }
+    .hero .wrap { max-width: 1000px; margin: 0 auto; }
+    .hero h1 { margin: 0; font-size: 2.2rem; color: #0b4744; letter-spacing: -0.5px; }
+    .hero p.lead { margin-top: 0.6rem; color: #2f5553; font-size: 1.05rem; }
+    .hero .cta { margin-top: 1.25rem; display: inline-flex; gap: 0.6rem; }
+    .btn { padding: 0.65rem 1rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: #0b7b78; color: white; }
+    .btn-outline { background: white; color: #0b7b78; border: 2px solid #d8ebe8; }
+
+    /* NAV */
+    nav { display: flex; justify-content: center; gap: 0.5rem; padding: 0.6rem; background: white; box-shadow: 0 2px 6px rgba(10,10,10,0.04); position: sticky; top: 0; z-index: 5; }
+    nav button { background: transparent; border: none; padding: 0.6rem 1rem; font-weight: 600; color: #0b7b78; cursor: pointer; border-radius: 6px; }
+    nav button.active { background: #0bede5; color: #053938; }
+
+    /* LAYOUT */
+    .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
+    .grid { display: grid; grid-template-columns: 1fr 380px; gap: 1.2rem; align-items: start; }
+
+    /* CHAT */
+    #chatBox { border-radius: 12px; background: white; padding: 1rem; min-height: 380px; max-height: 520px; overflow-y: auto; box-shadow: 0 6px 18px rgba(11,123,120,0.06); border: 1px solid rgba(11,123,120,0.06); }
+    .chat-bubble.user { text-align: right; background: linear-gradient(90deg,#e6fffb,#f1fff9); display: inline-block; padding: 0.6rem 0.9rem; border-radius: 12px; margin: 0.45rem 0; }
+    .chat-bubble.bot { text-align: left; background: #fff8ea; display: inline-block; padding: 0.6rem 0.9rem; border-radius: 12px; margin: 0.45rem 0; }
+
+    .chat-input { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .chat-input input { flex: 1; padding: 0.75rem; border-radius: 10px; border: 1px solid #e6e6e6; }
+    .chat-input button { padding: 0.7rem 1rem; border-radius: 10px; border: none; background: #0b7b78; color: white; cursor: pointer; }
+
+    /* PRODUCT CARD (right column & inside chat) */
+    .product-card { display: flex; gap: 0.9rem; align-items: center; padding: 0.9rem; border-radius: 12px; background: linear-gradient(180deg,#ffffff,#fbfffd); box-shadow: 0 4px 12px rgba(10,10,10,0.03); border: 1px solid #eef7f6; margin-bottom: 1rem; }
+    .product-card img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; }
+    .product-card .meta { flex: 1; }
+    .product-card h4 { margin: 0; color: #064a48; }
+    .product-card p { margin: 6px 0 0; font-size: 0.95rem; color: #425; }
+    .product-card .buy { margin-top: 8px; display: inline-block; padding: 0.45rem 0.8rem; border-radius: 8px; background: #0bede5; color: #053938; border: none; cursor: pointer; font-weight: 600; }
+
+    /* Artisan Form */
+    #artisanForm { display: flex; flex-direction: column; gap: 0.7rem; padding: 1rem; border-radius: 12px; background: white; box-shadow: 0 6px 18px rgba(11,123,120,0.04); border: 1px solid #eef7f6; }
+    #artisanForm input, #artisanForm button { padding: 0.7rem; border-radius: 8px; border: 1px solid #e6e6e6; }
+    #artisanForm button { background: #0b7b78; color: white; border: none; cursor: pointer; font-weight: 700; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .product-card img { width: 80px; height: 80px; }
+    }
+
+    footer { text-align: center; padding: 2rem 1rem; color: #445; }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <h1>AI Marketplace for Local Artisans</h1>
+      <p class="lead">Chat-first shopping for authentic, locally made goods. Artisans sell by voice & photo — buyers shop by conversation. Simple. Trusted. Local.</p>
+
+      <div class="cta">
+        <button class="btn btn-primary" onclick="scrollToBuyer()">Shop Now</button>
+        <button class="btn btn-outline" onclick="scrollToArtisan()">Sell Your Craft</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- NAV TABS -->
+  <nav>
+    <button id="buyerTab" class="active">Buyer Chat</button>
+    <button id="artisanTab">Artisan Dashboard</button>
+  </nav>
+
+  <main class="container">
+    <div class="grid">
+      <!-- LEFT: Chat + products shown in chat -->
+      <div>
+        <section id="buyerSection">
+          <div id="chatBox">
+            <div class="chat-bubble bot">Assistant: Hi! Try messages like “handmade cups under 500” or “gift for mom under 800”.</div>
+          </div>
+
+          <div class="chat-input">
+            <input type="text" id="buyerInput" placeholder="Ask for handmade products...">
+            <button onclick="handleBuyerQuery()">Send</button>
+          </div>
+        </section>
+
+        <!-- small how it works (optional, brief) -->
+        <section style="margin-top:1.1rem; background:transparent; padding:0.5rem 0;">
+          <div style="display:flex; gap:1rem; justify-content:space-around; text-align:center;">
+            <div><strong>1. Chat</strong><div style="font-size:0.9rem;color:#445;">Tell the assistant what you want</div></div>
+            <div><strong>2. Discover</strong><div style="font-size:0.9rem;color:#445;">See products with short artisan stories</div></div>
+            <div><strong>3. Buy</strong><div style="font-size:0.9rem;color:#445;">Pay via UPI / confirm in one click</div></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT: Product column / Artisan form -->
+      <aside>
+        <div id="rightColumn">
+          <h3 style="margin-top:0; color:#064a48;">Featured Products</h3>
+          <div id="featuredList"></div>
+
+          <div style="height:18px;"></div>
+
+          <h3 style="color:#064a48;">Artisan Upload</h3>
+          <form id="artisanForm" onsubmit="addProduct(event)">
+            <input type="text" id="productTitle" placeholder="Product title (ex: Hand-painted Cup)" required>
+            <input type="number" id="productPrice" placeholder="Price (₹)" required>
+            <label style="font-size:0.9rem;color:#445;">Photo</label>
+            <input type="file" id="productPhoto" accept="image/*" required>
+            <label style="font-size:0.9rem;color:#445;">Short audio note (proof)</label>
+            <input type="file" id="productAudio" accept="audio/*" required>
+            <button type="submit">Add Product</button>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <div style="max-width:900px;margin:auto;padding:0 1rem;">
+      <small>Prototype — AI Marketplace for Local Artisans. Built for demo purposes.</small>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching & scroll helpers
+    const buyerTab = document.getElementById('buyerTab');
+    const artisanTab = document.getElementById('artisanTab');
+
+    function setActiveTab(tab) {
+      if (tab === 'buyer') {
+        buyerTab.classList.add('active');
+        artisanTab.classList.remove('active');
+        document.getElementById('buyerSection').scrollIntoView({behavior:'smooth'});
+      } else {
+        artisanTab.classList.add('active');
+        buyerTab.classList.remove('active');
+        document.getElementById('productTitle').scrollIntoView({behavior:'smooth'});
+      }
+    }
+
+    buyerTab.onclick = () => setActiveTab('buyer');
+    artisanTab.onclick = () => setActiveTab('artisan');
+
+    function scrollToBuyer(){ setActiveTab('buyer'); }
+    function scrollToArtisan(){ setActiveTab('artisan'); }
+
+    // Mock products database
+    let products = [
+      { id:1, title: "Hand-painted Cup", price: 450, photo: "https://indianfolkart.org/wp-content/uploads/2021/11/kalighat-painting-Indian-handictraft-Dilu-Chitrakar-04.jpeg", audio: "", region: "Jaipur", hours: 2 },
+      { id:2, title: "Handwoven Scarf", price: 900, photo: "https://carrievarner.com/cdn/shop/files/Black-Sunset-Handwoven-Scarf-Main-Carrie-Varner-Textiles.jpg?v=1713799607", audio: "", region: "Kutch", hours: 5 }
+    ];
+
+    // Render featured list on right
+    function renderFeatured(){
+      const list = document.getElementById('featuredList');
+      list.innerHTML = '';
+      products.slice(0,4).forEach(p => {
+        const node = document.createElement('div');
+        node.className = 'product-card';
+        node.innerHTML = `
+          <img src="${p.photo}" alt="${p.title}">
+          <div class="meta">
+            <h4>${p.title}</h4>
+            <p>Price: ₹${p.price}</p>
+            <p style="font-size:0.85rem;color:#2d5;">${p.region} • ${p.hours} hrs</p>
+            <button class="buy" onclick="quickBuy(${p.id})">Buy</button>
+          </div>
+        `;
+        list.appendChild(node);
+      });
+    }
+
+    function quickBuy(id){
+      const p = products.find(x => x.id === id);
+      alert(`Order placed for ${p.title} — (demo: payment mocked)`);
+    }
+
+    // Chat logic
+    const chatBox = document.getElementById('chatBox');
+    function appendChat(text, who='bot'){
+      const d = document.createElement('div');
+      d.className = 'chat-bubble ' + (who==='user'?'user':'bot');
+      d.textContent = text;
+      chatBox.appendChild(d);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function handleBuyerQuery(){
+      const input = document.getElementById('buyerInput');
+      const query = input.value.trim();
+      if(!query) return;
+      appendChat(query,'user');
+
+      // very simple matching: look for word match in title and price if number present
+      const numMatch = query.match(/(\d+)/);
+      let results = products.filter(p => {
+        const q = query.toLowerCase();
+        return p.title.toLowerCase().includes(q.split(' ')[0]) || p.title.toLowerCase().split(' ').some(t => q.includes(t));
+      });
+
+      if(numMatch){
+        const num = Number(numMatch[0]);
+        results = products.filter(p => p.price <= num);
+      }
+
+      if(results.length === 0){
+        appendChat('Assistant: No products found. Try a broader search like "gift for mom under 800".');
+      } else {
+        appendChat('Assistant: Found ' + results.length + ' result(s).');
+        results.forEach(p => {
+          // insert product card into chat
+          const card = document.createElement('div');
+          card.className = 'product-card';
+          card.innerHTML = `\
+            <img src="${p.photo}" alt="${p.title}">\
+            <div class=\"meta\">\
+              <h4>${p.title}</h4>\
+              <p>Price: ₹${p.price}</p>\
+              <p><strong>Proof-of-Handmade:</strong> ${p.region}, ${p.hours} hrs</p>\
+              <button class=\"buy\" onclick=\"buyFromChat(${p.id})\">Buy Now</button>\
+            </div>`;
+          chatBox.appendChild(card);
+        });
+      }
+
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function buyFromChat(id){
+      const p = products.find(x => x.id === id);
+      alert(`Order placed for ${p.title} — (demo)\nArtisan will receive order via WhatsApp in real version.`);
+    }
+
+    // Artisan add product
+    let nextId = products.length + 1;
+    function addProduct(e){
+      e.preventDefault();
+      const title = document.getElementById('productTitle').value;
+      const price = Number(document.getElementById('productPrice').value);
+      const photoFile = document.getElementById('productPhoto').files[0];
+      const audioFile = document.getElementById('productAudio').files[0];
+
+      const photoURL = photoFile ? URL.createObjectURL(photoFile) : '';
+      const audioURL = audioFile ? URL.createObjectURL(audioFile) : '';
+
+      const newP = { id: nextId++, title, price, photo: photoURL || 'https://via.placeholder.com/300', audio: audioURL, region: 'Local Artisan', hours: 3 };
+      products.unshift(newP);
+      renderFeatured();
+      alert('Product added! It is now discoverable in the chat.');
+      document.getElementById('artisanForm').reset();
+    }
+
+    // Init
+    renderFeatured();
+  </script>
+</body>
+</html>
